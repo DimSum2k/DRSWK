@@ -13,7 +13,7 @@ execute the following bash commands
 conda create -n drswk && conda activate drswk
 
 # To run experiments
-conda install pytorch numpy scipy pot pillow
+conda install pytorch tqdm numpy scikit-learn
 
 # To plot experiment resulst
 conda install matplotlib ipympl pandas

@@ -1,4 +1,5 @@
 import time
+import numpy as np 
 import torch
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions import Categorical

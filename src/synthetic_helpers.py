@@ -61,3 +61,46 @@ def sample_from_moments(means, covs, n, K_max, epoch):
     return X
 
 
+def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
+    hp_kernel = torch.logspace(-5,4,14)
+    p_gamma = len(hp_kernel)
+    p_lambd = 25
+    lambd_params = torch.logspace(-5,2,p_lambd)
+    hp_params = lambd_params
+    rmse_l = []
+    d = X[0].shape[-1]
+
+    for e in range(epoch):
+        print("SW epoch {}/{}".format(e+1,epoch))
+        k_class = k_sw_rf(100,
+                          100,
+                          non_uniform=False,
+                          d_in=d,
+                          kernel="gauss",
+                          true_rf=True)
+        assert k_class.r > 0
+
+        K_train, K_val = k_class.get_grams(X[:,e,:,:], 
+                                           X_val[:,e,:,:],
+                                           hp_kernel)
+
+        _, _, hps, w_opt = train_multiple_kernels(K_train, 
+                                         K_val, 
+                                         y, 
+                                         y_val, 
+                                         hp_params,
+                                         hp_kernel, 
+                                         subsample=1)
+        gammas = torch.tensor(hps["KRR"]["hp_kernel"])
+        print("Gammas rbf", gammas)
+        start_time = time.time()
+        K_test = k_class.get_cross_gram(X[:,e,:,:], X_test[:,e,:,:], gammas)
+        print("time elapsed computing both Gram matrix: {:.2f}s (shape: {})\n".format(time.time() - start_time,K_test.shape))
+        clf = KRR()
+        clf.fitted = True
+        clf.alpha_ = w_opt
+        y_test_pred_idx = clf.predict(K_test[0])
+        acc_test = (y_test_pred_idx == y_test.argmax(dim=1)).sum() / y_test.shape[0]
+        rmse = np.sqrt(torch.sum((y_test_pred_idx - y_test.argmax(dim=1))**2)/y_test.shape[0])
+        rmse_l.append(rmse)
+    return rmse_l

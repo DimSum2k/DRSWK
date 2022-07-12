@@ -127,7 +127,7 @@ class k_sw_rf():
         del vect_g
 
         Y_phi = self.get_features_set(Y)
-        print(X_phi.shape, Y_phi.shape)
+        #print(X_phi.shape, Y_phi.shape)
         vect_diff = Y_phi.unsqueeze(1) - X_phi
         assert (T_y, T_x, C) == vect_diff.shape
         if self.p == 2:

@@ -5,8 +5,6 @@ from tqdm import tqdm
 from classifiers import KRR
 import time
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#device = "cpu"
-
 
 def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subsample=1, save=""):
     r"""
@@ -19,8 +17,6 @@ def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subs
         hp_kernel: hyper-parameters for the kernel
         subsample (int): if > 1, evaluate on subsets of the training gram matrices
         save: if True save training details
-
-        SOLVE THE SLOW ISSUE !
     """
     T = Ks.shape[-1]
     M = 2 if y_train.dim() == 1 else y_train.shape[1]
@@ -34,45 +30,28 @@ def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subs
     res = torch.zeros((n_Ks, len(hp_clf), subsample, 2)).to(device)
     hp_clf_opt = []
     hp_kernel_opt = []
-    #train_gram_opt = []
     res_opt = torch.zeros((subsample, 2)).to(device)
     for s in trange(subsample):
         stop = int((T / subsample) * (s + 1))
         assert stop%M == 0
         K_train_s, y_train_s, K_test_s = Ks[:, :stop, :stop], y_train[:stop], K_tests[:, :, :stop]
-        #tqdm.write("Subsample shapes: {}, {}, {}, {}".format(stop, K_train_s.shape, y_train_s.shape, K_test_s.shape))
         max_acc = 0
         idx = (0, 0)
         for j in range(n_Ks):
-            #start_time = time.time()
             K, Ktest = K_train_s[j].to(device), K_test_s[j].to(device)
-            #print("time elapsed sending to device: {:.8f}s".format(time.time() - start_time))
             for k in range(len(hp_clf)):
-                #start_time = time.time()
                 clf = KRR(hp_clf[k])
-                #print("taking classifier: {:.8f}s".format(time.time() - start_time))
-                #clf = clf_unloaded(hp_clf[k])
-                #start_time = time.time()
                 res[j, k, s] = train_and_evaluate(clf, K, Ktest, y_train_s, y_test)
-                #print("training: {:.8f}s".format(time.time() - start_time))
-                #print(torch.get_num_interop_threads(), torch.get_num_threads())
                 if res[j,k,s,1]>max_acc:
                     max_acc = res[j,k,s,1]
                     idx = (j,k)
                     w_opt = clf.alpha_
         tqdm.write("Acc: {}, idx: {}".format(max_acc.item(), idx))
         hp_clf_opt.append(hp_clf[idx[1]].item())
-        ####### hp_kernel_opt.append(hp_kernel[idx[0]].item())
         hp_kernel_opt.append(hp_kernel[idx[0]])
-        #train_gram_opt.append(Ks[idx[0], :stop, :stop])
         if save:
             torch.save(w_opt, save + 'weight_{}.pt'.format(stop))
         res_opt[s] = res[idx[0], idx[1], s]
-
-    #results[clf_unloaded.name] = res
-    #dict_best[clf_unloaded.name] = {"hp_clf": hp_clf_opt, "hp_kernel": hp_kernel_opt}
-    # with open(save + 'K_train_tuned.pickle', 'wb') as f:
-    #    pickle.dump(train_gram_opt, f)
     results["KRR"] = res
     dict_best["KRR"] = {"hp_clf": hp_clf_opt, "hp_kernel": hp_kernel_opt}
     if save:
@@ -103,12 +82,6 @@ def train_and_evaluate(clf, K_train, K_test, y_train, y_test):
     clf.fit(K_train, y_train)
     y_train_pred = clf.predict(K_train)
     y_test_pred = clf.predict(K_test)
-    #if clf.M == 2:
-    #    assert (y_train_pred == y_train).dim() == 1
-    #    assert (y_test_pred == y_test).dim() == 1
-    #    acc_train = (y_train_pred == y_train).sum() / y_train.shape[0]
-    #    acc_test = (y_test_pred == y_test).sum() / y_test.shape[0]
-    #else:
     acc_train = (y_train_pred == y_train.argmax(dim=1)).sum() / y_train.shape[0]
     acc_test = (y_test_pred == y_test.argmax(dim=1)).sum() / y_test.shape[0]
     return torch.stack((acc_train, acc_test))

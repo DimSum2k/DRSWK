@@ -1,15 +1,12 @@
-# from matplotlib import pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torchvision import transforms #, utils
+from torchvision import transforms
 import pickle
 import os
 from tqdm import trange
 import gzip
-# import sys
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
 def build_dataset(path_raw, path_out, digits, fashion):
     """Build and save datasets from raw files
@@ -45,7 +42,7 @@ def build_dataset(path_raw, path_out, digits, fashion):
     torch.save(torch.hstack((X_test / 255, y_test)), path_out + 'flatten_test_data.pickle')
 
     # build 2D normalized and centered non uniform histograms with thresholding of pixel intensities
-    threshold = 0 # 127 - no thresholding any more !
+    threshold = 0
     X_train = extract_hist_list(X_train.reshape((-1, 28, 28)), threshold)
     X_test = extract_hist_list(X_test.reshape((-1, 28, 28)), threshold)
     if path_out:
@@ -56,8 +53,7 @@ def build_dataset(path_raw, path_out, digits, fashion):
                 pickle.dump((X_test, y_test), f)
     return
 
-
-def load_train_set(opt, idx = 0, plot: bool = False):
+def load_train_set(opt, idx = 0):
     """Import MNIST train data in the torch.tensor format located in opt.path_data
     and perform a train/validation split from the full train set.
 
@@ -73,8 +69,6 @@ def load_train_set(opt, idx = 0, plot: bool = False):
         print(X.shape)
         y = X[:,-10:]
         X = X[:,:-10]
-        #print(X.max())
-        #print(X.min())
     else:
         with open(opt.path_data + 'train_data.pickle', 'rb') as f:
             X, y = pickle.load(f)
@@ -88,13 +82,8 @@ def load_train_set(opt, idx = 0, plot: bool = False):
     print("Validation set: {} points, freq: {}".format(len(X_val),
                                                   [round(((y_val.argmax(dim=1) == i).sum() / len(y_val)).item(), 3) for i in
                                                    range(len(opt.classes))]))
-    if plot: # plot a few examples
-        for i in range(0, min(5, len(y_train))):
-            show_im(hist_to_im(X_train[i], uniform=not opt.non_uniform), y_train[i])
-    return X_train, y_train, X_val, y_val
 
-
-def load_test_set(opt, idx=0, plot: bool = False):
+def load_test_set(opt, idx=0):
     """Import MNIST test data in the torch.tensor format located in opt.path_data.
     Args:
         opt: config, data in opt.path_data
@@ -117,11 +106,6 @@ def load_test_set(opt, idx=0, plot: bool = False):
     print("Test set: {} points, freq: {}".format(len(X_test),
                                                   [round(((y_test.argmax(dim=1) == i).sum() / len(y_test)).item(), 3) for i in
                                                    range(len(opt.classes))]))
-    if plot: # plot a few examples
-        for i in range(0, min(5, len(y_test))):
-            show_im(hist_to_im(X_test[i], uniform=not opt.non_uniform), y_test[i])
-    return X_test, y_test
-
 
 def import_mnist_from_file(path: str, kind: str='train') -> tuple:
     """Import raw MNIST (or fashion MNIST) data from `path`
@@ -192,22 +176,6 @@ def extract_digits(digits: list, X: torch.tensor, y: torch.tensor, verbose: bool
         y = y.view(-1,1)
     return X, y
 
-
-def show_im(ax, im: torch.tensor, title=""):
-    """Plot the image of a digit
-
-    Args:
-        im (torch.tensor): shape (28,28)
-        y (int): digit name
-    """
-    pixels = np.array(im, dtype='float')
-    #pixels = im.reshape((28, 28))
-    ax.imshow(pixels, cmap='gray')
-    #"Label {}".format(y)
-    ax.set_title(title)
-    #plt.show()
-
-
 def extract_hist_list(X: list, threshold: int = 127) -> list:
     """Transform inputs from images (28*28 grids of pixel intensities) to the coordinates
     (in the 2D positive orthant) where the pixels have an intensity greater than 'threshold'.
@@ -232,7 +200,6 @@ def extract_hist_list(X: list, threshold: int = 127) -> list:
         hist.append(torch.hstack([pos, c.view(-1, 1)]))
     return hist
 
-
 def hist_to_im(x: torch.tensor, uniform: bool=True) -> torch.tensor:
     """Revert signal as a system of coordinates to original image with binary pixel intensities
 
@@ -247,7 +214,6 @@ def hist_to_im(x: torch.tensor, uniform: bool=True) -> torch.tensor:
     for i in range(len(x)):
         out[coord[i,0],coord[i,1]] = 255 if uniform else x[i,-1]
     return out
-
 
 def reorder_classes(X,y, digits):
     r"""Reorder classes by grouping digits
@@ -415,25 +381,3 @@ def im_variation(x, hist=True, scaled=True, th=None):
         x_rot = composed(x_rot)
 
     return x_rot.squeeze()
-
-
-def modify_set_old(X, scaled=True):
-    T = len(X)
-    X_mod_hist = []
-    X_mod_flat = torch.zeros_like(X)
-    for t in range(T):
-        x = im_variation(X[t].view(28,28), hist=False, scaled=scaled)
-        X_mod_flat[t] = x.flatten()
-        pos = torch.nonzero(x)
-        c = torch.tensor([x[idx[0]][idx[1]] for idx in pos], dtype=torch.float)
-        c /= c.sum()
-        pos = pos / 13.5 - 1
-        X_mod_hist.append(torch.hstack([pos, c.view(-1, 1)]))
-    return X_mod_flat, X_mod_hist
-
-
-
-
-
-
-

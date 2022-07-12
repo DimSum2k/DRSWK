@@ -82,6 +82,7 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
                           100,
                           non_uniform=False,
                           d_in=d,
+                          p=1,
                           true_rf=True)
         assert k_class.r > 0
 

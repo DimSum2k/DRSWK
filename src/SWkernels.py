@@ -38,9 +38,9 @@ class k_sw_rf():
         self.true_rf = true_rf
         if self.true_rf:
             assert self.r == self.M
-            print("Number of random features: {}".format(self.th.shape[0]))
-        else:
-            print("Number of slices: {}, t's: {}".format(self.th.shape[0], n_ts))
+            #print("Number of random features: {}".format(self.th.shape[0]))
+        #else:
+        #    print("Number of slices: {}, t's: {}".format(self.th.shape[0], n_ts))
 
     def _bins_indexes(self, real_numbers, bins):
         """Converts a batch of real numbers to a batch of indexes for the bins

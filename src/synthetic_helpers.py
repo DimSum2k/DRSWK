@@ -139,13 +139,13 @@ def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch):
         hp = torch.stack(hps["KRR"]["hp_kernel"])
         hp_out = hp[:,0]
         hp_in = hp[:,1]
-        print("H", hp_in, hp_out)
+        #print("H", hp_in, hp_out)
         k_class = k_MMD(hp_in, hp_out, non_uniform=False)
         start_time = time.time()
         K_test = k_class.get_cross_gram_gauss(X[:,e,:,:], X_test[:,e,:,:])
-        K_test = torch.stack([K_test[i,i] for i in range(len(K_test))]) # FIX THAT - HACKY
-        print(K_test.shape)
-        print("time elapsed computing both Gram matrix: {:.2f}s (shape: {})\n".format(time.time() - start_time,
+        K_test = torch.stack([K_test[i,i] for i in range(len(K_test))])
+        #print(K_test.shape)
+        print("time elapsed computing both Gram matrices: {:.2f}s (shape: {})\n".format(time.time() - start_time,
                                                                                      K_test.shape))
         clf = KRR()
         clf.fitted = True

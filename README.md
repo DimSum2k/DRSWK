@@ -17,6 +17,7 @@ conda install pytorch tqdm numpy scikit-learn
 
 # To plot experiment results and use the notebooks
 conda install matplotlib ipympl pandas
+conda install -c conda-forge time
 ```
 
 ## Cite The paper:

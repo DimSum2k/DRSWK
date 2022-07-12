@@ -5,6 +5,9 @@ from torch.distributions.mixture_same_family import MixtureSameFamily
 from torch.distributions.uniform import Uniform
 import torch.nn.functional as F
 
+from classifiers import KRR
+from training import train_multiple_kernels
+
 def GMM(means, covs, p):
     """GMM in arbitrary dimension d with K components.
 

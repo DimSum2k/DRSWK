@@ -110,3 +110,47 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
         rmse = np.sqrt(torch.sum((y_test_pred_idx - y_test.argmax(dim=1))**2)/y_test.shape[0])
         rmse_l.append(rmse)
     return rmse_l
+
+
+def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch):
+    hp_in = torch.logspace(-6, 3, 14)
+    hp_out = torch.logspace(-3, 3, 7)
+    hp_kernel = torch.cartesian_prod(hp_out,hp_in)
+    p_lambd = 25
+    lambd_params = torch.logspace(-5,2,p_lambd)
+    hp_params = lambd_params
+    rmse_l = []
+    
+    for e in range(epoch):
+        print("MMD epoch {}/{}".format(e+1,epoch))
+        k_class = k_MMD(hp_in, hp_out, non_uniform=False)
+        K_train, K_val = k_class.get_grams_gauss(X[:,e,:,:], X_val[:,e,:,:])
+        K_train = K_train.flatten(0, 1)
+        K_val = K_val.flatten(0, 1)
+        _, _, hps, w_opt = train_multiple_kernels(K_train, 
+                                         K_val, 
+                                         y, 
+                                         y_val, 
+                                         hp_params,
+                                         hp_kernel,
+                                         subsample=1)
+        
+        hp = torch.stack(hps["KRR"]["hp_kernel"])
+        hp_out = hp[:,0]
+        hp_in = hp[:,1]
+        print("H", hp_in, hp_out)
+        k_class = k_MMD(hp_in, hp_out, non_uniform=False)
+        start_time = time.time()
+        K_test = k_class.get_cross_gram_gauss(X[:,e,:,:], X_test[:,e,:,:])
+        K_test = torch.stack([K_test[i,i] for i in range(len(K_test))]) # FIX THAT - HACKY
+        print(K_test.shape)
+        print("time elapsed computing both Gram matrix: {:.2f}s (shape: {})\n".format(time.time() - start_time,
+                                                                                     K_test.shape))
+        clf = KRR()
+        clf.fitted = True
+        clf.alpha_ = w_opt
+        y_test_pred_idx = clf.predict(K_test[0])
+        acc_test = (y_test_pred_idx == y_test.argmax(dim=1)).sum() / y_test.shape[0]
+        rmse = np.sqrt(torch.sum((y_test_pred_idx - y_test.argmax(dim=1))**2)/y_test.shape[0])
+        rmse_l.append(rmse)
+    return rmse_l

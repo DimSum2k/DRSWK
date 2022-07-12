@@ -169,7 +169,7 @@ class k_sw_rf():
         C = self.M if self.true_rf else self.r * self.M
         X_phi = self.get_features_set(X)
         Y_phi = self.get_features_set(Y)
-        print(X_phi.shape, Y_phi.shape)
+        #print(X_phi.shape, Y_phi.shape)
         g = len(gammas)
         vect_diff = Y_phi.unsqueeze(1) - X_phi
         assert (T2, T1, C) == vect_diff.shape

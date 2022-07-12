@@ -99,7 +99,7 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
                                          hp_kernel, 
                                          subsample=1)
         gammas = torch.tensor(hps["KRR"]["hp_kernel"])
-        print("Gammas rbf", gammas)
+        #print("Gammas rbf", gammas)
         start_time = time.time()
         K_test = k_class.get_cross_gram(X[:,e,:,:], X_test[:,e,:,:], gammas)
         print("time elapsed computing both Gram matrix: {:.2f}s (shape: {})\n".format(time.time() - start_time,K_test.shape))

@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from src.classifiers import KRR
 from src.training import train_multiple_kernels
 from src.SWkernels import k_sw_rf
+from src.MMDkernels import k_MMD
 
 def GMM(means, covs, p):
     """GMM in arbitrary dimension d with K components.

@@ -1,7 +1,7 @@
 import torch
 import time
 from tqdm import trange
-from gram_matrices import gram, gram_cross
+from src.gram_matrices import gram, gram_cross
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class k_MMD():

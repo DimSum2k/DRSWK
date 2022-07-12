@@ -1,6 +1,6 @@
 import torch
 import pickle
-from tqdm import trange
+#from tqdm import trange
 from tqdm import tqdm
 from src.classifiers import KRR
 import time
@@ -31,7 +31,7 @@ def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subs
     hp_clf_opt = []
     hp_kernel_opt = []
     res_opt = torch.zeros((subsample, 2)).to(device)
-    for s in trange(subsample):
+    for s in range(subsample):
         stop = int((T / subsample) * (s + 1))
         assert stop%M == 0
         K_train_s, y_train_s, K_test_s = Ks[:, :stop, :stop], y_train[:stop], K_tests[:, :, :stop]
@@ -46,7 +46,7 @@ def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subs
                     max_acc = res[j,k,s,1]
                     idx = (j,k)
                     w_opt = clf.alpha_
-        tqdm.write("Acc: {}, idx: {}".format(max_acc.item(), idx))
+        #tqdm.write("Acc: {}, idx: {}".format(max_acc.item(), idx))
         hp_clf_opt.append(hp_clf[idx[1]].item())
         hp_kernel_opt.append(hp_kernel[idx[0]])
         if save:

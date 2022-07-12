@@ -1,7 +1,7 @@
 import torch
 import pickle
 #from tqdm import trange
-from tqdm import tqdm
+#from tqdm import tqdm
 from src.classifiers import KRR
 import time
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -100,7 +100,7 @@ def evaluate_test(K_test, y_test, clf, path_weights, subsample):
         else:
             acc_test = (y_test_pred == y_test.to(device).argmax(dim=1)).sum() / y_test.shape[0]
         res[j] = acc_test
-        print(stop, res[j])
+        #print(stop, res[j])
     return res
 
 def evaluate_test_robust(K_test, y_test, clf, path_weights):
@@ -116,6 +116,6 @@ def evaluate_test_robust(K_test, y_test, clf, path_weights):
         else:
             acc_test = (y_test_pred == y_test.to(device).argmax(dim=1)).sum() / y_test.shape[0]
         res[j] = acc_test
-        print(stop, res[j])
+        #print(stop, res[j])
         j=-1
     return res

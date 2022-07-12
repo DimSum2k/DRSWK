@@ -126,6 +126,7 @@ class k_MMD():
         return torch.exp(K)
 
     def get_grams_gauss(self, X, Y):
+        T_x, T_y = len(X), len(Y)
         n_hp_in = len(self.hp_inner)
         n_hp_out = len(self.hp_outer)
         X_phi = self.get_norms_gauss_set(X)

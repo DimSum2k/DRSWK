@@ -1,7 +1,6 @@
 import torch
 import time
 import pickle
-from tqdm import trange # tqdm
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def gram(X, k, hp=1):
@@ -17,11 +16,11 @@ def gram(X, k, hp=1):
 
     T = len(X)
     G = torch.zeros((hp, T, T)).to(device)
-    for t in trange(T - 1, desc='1st loop'):
-        for s in trange(t + 1, T, desc='2nd loop', leave=False):
+    for t in range(T - 1, desc='1st loop'):
+        for s in range(t + 1, T, desc='2nd loop', leave=False):
                 G[:, t, s] = k(X[t].to(device), X[s].to(device))
     G += G.swapaxes(1,2).clone()
-    for t in trange(T, desc="3rd loop"):
+    for t in range(T, desc="3rd loop"):
         G[:,t, t] = k(X[t].to(device), X[t].to(device))
     return G
 
@@ -39,8 +38,8 @@ def gram_cross(X_train, X_test, k,hp=1):
     print("HP", hp)
     T1, T2 = len(X_test), len(X_train)
     G = torch.zeros((hp, T1, T2)).to(device)
-    for t1 in trange(T1, desc='1st loop'):
-        for t2 in trange(T2, desc='2nd loop', leave=False):
+    for t1 in range(T1, desc='1st loop'):
+        for t2 in range(T2, desc='2nd loop', leave=False):
                 G[:, t1, t2] = k(X_test[t1].to(device), X_train[t2].to(device))
     return G
 

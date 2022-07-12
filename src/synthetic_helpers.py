@@ -2,6 +2,7 @@ import torch
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions import Categorical
 from torch.distributions.mixture_same_family import MixtureSameFamily
+from torch.distributions.uniform import Uniform
 
 def GMM(means, covs, p):
     """GMM in arbitrary dimension d with K components.

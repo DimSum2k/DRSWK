@@ -62,8 +62,8 @@ class k_MMD():
             ps = torch.exp(-vect_g).sum(dim=(-1, -2)).div(n * m)
         assert ps.dim() == 1
         assert ps.shape[0] == n_hp
-
-    return ps
+    
+        return ps
 
     def get_squared_norm_mmd(self, x):
         assert x.dim() == 2, "x should have shape (n,d)"

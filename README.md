@@ -13,11 +13,10 @@ execute the following bash commands
 conda create -n drswk && conda activate drswk
 
 # To run experiments
-conda install pytorch tqdm numpy scikit-learn
+conda install pytorch scikit-learn
 
 # To plot experiment results and use the notebooks
-conda install matplotlib ipympl pandas
-conda install -c conda-forge time
+conda install ipympl pandas 
 ```
 
 ## Cite The paper:

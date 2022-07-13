@@ -68,7 +68,7 @@ def sample_from_moments(means, covs, n, K_max, epoch):
     return X
 
 
-def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
+def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch, v):
     hp_kernel = torch.logspace(-5,4,14)
     p_gamma = len(hp_kernel)
     p_lambd = 25
@@ -78,7 +78,7 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
     d = X[0].shape[-1]
 
     for e in range(epoch):
-        print("SW epoch {}/{}".format(e+1,epoch))
+        if v: print("SW epoch {}/{}".format(e+1,epoch))
         k_class = k_sw_rf(100,
                           100,
                           non_uniform=False,
@@ -102,7 +102,7 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
         #print("Gammas rbf", gammas)
         start_time = time.time()
         K_test = k_class.get_cross_gram(X[:,e,:,:], X_test[:,e,:,:], gammas)
-        print("time elapsed computing both Gram matrices {:.2f}s (shape: {})\n".format(time.time() - start_time,K_test.shape))
+        if v: print("time elapsed computing both Gram matrices {:.2f}s (shape: {})\n".format(time.time() - start_time,K_test.shape))
         clf = KRR()
         clf.fitted = True
         clf.alpha_ = w_opt
@@ -113,7 +113,7 @@ def sw_training(X, y, X_val, y_val, X_test, y_test, p, epoch):
     return rmse_l
 
 
-def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch):
+def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch, v):
     hp_in = torch.logspace(-6, 3, 14)
     hp_out = torch.logspace(-3, 3, 7)
     hp_kernel = torch.cartesian_prod(hp_out,hp_in)
@@ -123,7 +123,7 @@ def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch):
     rmse_l = []
     
     for e in range(epoch):
-        print("MMD epoch {}/{}".format(e+1,epoch))
+        if v: print("MMD epoch {}/{}".format(e+1,epoch))
         k_class = k_MMD(hp_in, hp_out, non_uniform=False)
         K_train, K_val = k_class.get_grams_gauss(X[:,e,:,:], X_val[:,e,:,:])
         K_train = K_train.flatten(0, 1)
@@ -145,7 +145,7 @@ def mmd_training(X, y, X_val, y_val, X_test, y_test, epoch):
         K_test = k_class.get_cross_gram_gauss(X[:,e,:,:], X_test[:,e,:,:])
         K_test = torch.stack([K_test[i,i] for i in range(len(K_test))])
         #print(K_test.shape)
-        print("time elapsed computing both Gram matrices: {:.2f}s (shape: {})\n".format(time.time() - start_time,
+        if v: print("time elapsed computing both Gram matrices: {:.2f}s (shape: {})\n".format(time.time() - start_time,
                                                                                      K_test.shape))
         clf = KRR()
         clf.fitted = True

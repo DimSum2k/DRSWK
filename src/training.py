@@ -24,7 +24,7 @@ def train_multiple_kernels(Ks, K_tests, y_train, y_test, hp_clf, hp_kernel, subs
     assert n_Ks == len(K_tests)
     results = {}
     dict_best = {}
-    print("Starting training...\n")
+    #print("Starting training...\n")
     res = torch.zeros((n_Ks, len(hp_clf), subsample, 2)).to(device)
     hp_clf_opt = []
     hp_kernel_opt = []

@@ -35,7 +35,6 @@ def gram_cross(X_train, X_test, k,hp=1):
     Output:
         G (Tensor): Gram matrix, shape (T_test,T)
     """
-    print("HP", hp)
     T1, T2 = len(X_test), len(X_train)
     G = torch.zeros((hp, T1, T2)).to(device)
     for t1 in range(T1):
